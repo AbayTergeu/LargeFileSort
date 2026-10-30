@@ -1,6 +1,4 @@
-﻿using FileSorter.Lines;
-
-namespace FileSorter.Tests.Lines;
+﻿namespace FileSorter.Lines;
 
 internal static class LineComparer
 {
