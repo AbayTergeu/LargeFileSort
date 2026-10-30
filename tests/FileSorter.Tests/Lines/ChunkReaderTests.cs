@@ -28,7 +28,7 @@ public class ChunkReaderTests
 
         Assert.Equal(["1. A\n", "2. B"], chunks);
     }
-    
+
     [Fact]
     public void ReadChunk_SameBufferEveryTime()
     {

@@ -106,7 +106,7 @@ public sealed class SortCommandTests : IDisposable
 
         Assert.Equal(["input.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName));
     }
-    
+
     [Fact]
     public void Run_SameOutputForAnyNumberOfWorkers()
     {

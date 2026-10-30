@@ -1,6 +1,4 @@
-﻿using FileSorter.Features.Sort;
-
-namespace FileSorter.Lines;
+﻿namespace FileSorter.Lines;
 
 /// <summary>
 /// Reads the input in chunks. Every chunk ends at a line break, so no line is split between

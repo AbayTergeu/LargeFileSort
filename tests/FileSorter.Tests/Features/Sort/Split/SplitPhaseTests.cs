@@ -49,7 +49,7 @@ public sealed class SplitPhaseTests : IDisposable
 
         Assert.Equal(3, exception.LineNumber);
     }
-    
+
     [Fact]
     public void Run_InvalidLinesInParallelChunks_ReportsTheEarliest()
     {

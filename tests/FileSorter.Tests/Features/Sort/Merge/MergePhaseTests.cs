@@ -82,7 +82,7 @@ public sealed class MergePhaseTests : IDisposable
         Assert.Throws<OperationCanceledException>(
             () => new MergePhase(options, _tempDirectory).Run(runs, new MemoryStream(), new CancellationToken(canceled: true)));
     }
-    
+
     private string Merge(int fanIn, params string[] runContents) => Merge(fanIn, WriteRuns(runContents));
 
     private string Merge(int fanIn, List<string> runs)
