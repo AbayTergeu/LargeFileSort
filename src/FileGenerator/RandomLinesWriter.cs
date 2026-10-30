@@ -46,7 +46,6 @@ internal sealed class RandomLinesWriter
                 "Target size is too small for a single line.");
         }
     }
-    
     private int WriteLine(Span<byte> line)
     {
         var number = _random.NextInt64(1, MaxNumber + 1);
