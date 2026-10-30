@@ -16,7 +16,7 @@ internal sealed class TempDirectory : IDisposable
 
     private string Path { get; }
 
-    public string NewFilePath() => System.IO.Path.Combine(Path, $"run-{++_fileCount:D6}.tmp");
+    public string NewFilePath() => System.IO.Path.Combine(Path, $"run-{Interlocked.Increment(ref _fileCount):D6}.tmp");
 
     public void Dispose()
     {

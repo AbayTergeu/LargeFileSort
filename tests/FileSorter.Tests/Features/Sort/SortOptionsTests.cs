@@ -15,13 +15,14 @@ public class SortOptionsTests
         Assert.Equal(Path.GetDirectoryName(options.OutputPath), options.TempParentPath);
         Assert.Equal(SortOptions.DefaultChunkMegabytes * 1024 * 1024, options.ChunkSize);
         Assert.Equal(SortOptions.DefaultMergeFanIn, options.MergeFanIn);
+        Assert.Equal(Environment.ProcessorCount, options.Workers);
         Assert.False(options.SkipInvalid);
     }
 
     [Fact]
     public void TryParse_AllOptions()
     {
-        string[] args = ["in.txt", "--output", "out.txt", "--temp-dir", "tmp", "--chunk-mb", "16", "--fan-in", "8", "--skip-invalid"];
+        string[] args = ["in.txt", "--output", "out.txt", "--temp-dir", "tmp", "--chunk-mb", "16", "--fan-in", "8", "--workers", "3", "--skip-invalid"];
 
         Assert.True(SortOptions.TryParse(args, out var options, out _));
 
@@ -29,6 +30,7 @@ public class SortOptionsTests
         Assert.Equal(Path.GetFullPath("tmp"), options.TempParentPath);
         Assert.Equal(16 * 1024 * 1024, options.ChunkSize);
         Assert.Equal(8, options.MergeFanIn);
+        Assert.Equal(3, options.Workers);
         Assert.True(options.SkipInvalid);
     }
 
@@ -51,6 +53,8 @@ public class SortOptionsTests
     [InlineData("in.txt", "--chunk-mb", "2048")]
     [InlineData("in.txt", "--chunk-mb", "abc")]
     [InlineData("in.txt", "--fan-in", "1")]
+    [InlineData("in.txt", "--workers", "0")]
+    [InlineData("in.txt", "--workers", "65")]
     public void TryParse_InvalidArguments_Fails(params string[] args)
     {
         Assert.False(SortOptions.TryParse(args, out _, out var error));

@@ -19,15 +19,15 @@ public sealed class SortCommandTests : IDisposable
     }
 
     [Theory]
-    [InlineData(1, 64, 2)]
-    [InlineData(2, 200, 3)]
-    [InlineData(3, 1000, 64)]
-    [InlineData(4, 50_000, 2)]
-    public void Run_MatchesInMemorySort(int seed, int chunkSize, int fanIn)
+    [InlineData(1, 64, 2, 1)]
+    [InlineData(2, 200, 3, 4)]
+    [InlineData(3, 1000, 64, 8)]
+    [InlineData(4, 50_000, 2, 2)]
+    public void Run_MatchesInMemorySort(int seed, int chunkSize, int fanIn, int workers)
     {
         var lines = RandomLines.Create(seed, count: 2000);
 
-        var output = Sort(string.Join('\n', lines) + "\n", chunkSize, fanIn);
+        var output = Sort(string.Join('\n', lines) + "\n", chunkSize, fanIn, workers);
 
         var expected = string.Join('\n', ReferenceSorter.Sort(lines)) + "\n";
         Assert.True(expected == output, $"Output differs from the in-memory sort (seed {seed}).");
@@ -96,17 +96,27 @@ public sealed class SortCommandTests : IDisposable
         Assert.Equal(["input.txt", "output.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName).Order());
     }
 
-    private string Sort(string content, int chunkSize = 1024, int fanIn = 64)
+    [Fact]
+    public void Run_SameOutputForAnyNumberOfWorkers()
     {
-        var options = WriteInput(content, chunkSize, fanIn);
+        var content = string.Join('\n', RandomLines.Create(seed: 6, count: 5000));
+
+        var outputs = new[] { 1, 2, 4, 8 }.Select(workers => Sort(content, chunkSize: 128, fanIn: 4, workers)).ToList();
+
+        Assert.All(outputs, output => Assert.Equal(outputs[0], output));
+    }
+
+    private string Sort(string content, int chunkSize = 1024, int fanIn = 64, int workers = 1)
+    {
+        var options = WriteInput(content, chunkSize, fanIn, workers);
         SortCommand.Run(options);
         return File.ReadAllText(options.OutputPath, Encoding.UTF8);
     }
 
-    private SortOptions WriteInput(string content, int chunkSize = 1024, int fanIn = 64)
+    private SortOptions WriteInput(string content, int chunkSize = 1024, int fanIn = 64, int workers = 1)
     {
         var input = _folder.File("input.txt");
         File.WriteAllBytes(input, Encoding.UTF8.GetBytes(content));
-        return new SortOptions(input, _folder.File("output.txt"), _folder.Path, chunkSize, fanIn, SkipInvalid: false);
+        return new SortOptions(input, _folder.File("output.txt"), _folder.Path, chunkSize, fanIn, workers, SkipInvalid: false);
     }
 }

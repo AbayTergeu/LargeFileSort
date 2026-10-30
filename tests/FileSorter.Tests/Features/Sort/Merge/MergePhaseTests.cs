@@ -77,7 +77,7 @@ public sealed class MergePhaseTests : IDisposable
 
     private string Merge(int fanIn, List<string> runs)
     {
-        var options = new SortOptions("input.txt", "output.txt", _folder.Path, ChunkSize: 1024, fanIn, SkipInvalid: false);
+        var options = new SortOptions("input.txt", "output.txt", _folder.Path, ChunkSize: 1024, fanIn, Workers: 1, SkipInvalid: false);
         using var output = new MemoryStream();
         new MergePhase(options, _tempDirectory).Run(runs, output);
         return Encoding.UTF8.GetString(output.ToArray());

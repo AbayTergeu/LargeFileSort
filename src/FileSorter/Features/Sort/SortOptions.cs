@@ -8,12 +8,13 @@ internal sealed record SortOptions(
     string TempParentPath,
     int ChunkSize,
     int MergeFanIn,
+    int Workers,
     bool SkipInvalid)
 {
-    public const int DefaultChunkMegabytes = 256;
+    public const int DefaultChunkMegabytes = 64;
     public const int DefaultMergeFanIn = 64;
-
     private const int MaxChunkMegabytes = 2047;
+    private const int MaxWorkers = 64;
 
     public static string Usage =>
         """
@@ -21,7 +22,8 @@ internal sealed record SortOptions(
 
           --output <path>     Result file. Default: <input name>.sorted<extension> next to the input.
           --temp-dir <path>   Folder for temporary files. Default: the folder of the output file.
-          --chunk-mb <n>      Size of one in-memory chunk, 1..2047. Default: 256.
+          --chunk-mb <n>      Size of one in-memory chunk, 1..2047. Default: 64.
+          --workers <n>       How many chunks are sorted in parallel. Default: the number of CPU cores.
           --fan-in <n>        How many runs are merged at once, 2 or more. Default: 64.
           --skip-invalid      Skip lines that are not "<number>. <text>" instead of stopping.
         """;
@@ -42,6 +44,7 @@ internal sealed record SortOptions(
         string? tempParentPath = null;
         var chunkMegabytes = DefaultChunkMegabytes;
         var fanIn = DefaultMergeFanIn;
+        var workers = Environment.ProcessorCount;
         var skipInvalid = false;
 
         for (var i = 1; i < args.Length; i++)
@@ -72,7 +75,9 @@ internal sealed record SortOptions(
                     break;
                 case "--fan-in" when TryParseInt(value, 2, int.MaxValue, out fanIn):
                     break;
-                case "--chunk-mb" or "--fan-in":
+                case "--workers" when TryParseInt(value, 1, MaxWorkers, out workers):
+                    break;
+                case "--chunk-mb" or "--fan-in" or "--workers":
                     error = $"Invalid value for '{name}': '{value}'.";
                     return false;
                 default:
@@ -94,6 +99,7 @@ internal sealed record SortOptions(
             tempParentPath ?? Path.GetDirectoryName(outputPath)!,
             chunkMegabytes * 1024 * 1024,
             fanIn,
+            workers,
             skipInvalid);
         return true;
     }
