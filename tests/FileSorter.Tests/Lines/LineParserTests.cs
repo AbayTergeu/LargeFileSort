@@ -1,8 +1,8 @@
 ﻿using System.Text;
-
 using FileSorter.Lines;
 
 namespace FileSorter.Tests.Lines;
+
 public class LineParserTests
 {
     [Theory]
@@ -13,15 +13,8 @@ public class LineParserTests
     [InlineData("01. Apple", 1, "Apple")]
     [InlineData("1.  Apple", 1, " Apple")]
     [InlineData("1. Яблоко", 1, "Яблоко")]
-    // ← сюда добавь остальные строки из таблицы «Правильные строки»
     public void TryParse_ValidLine_ReturnsNumberAndText(string line, long expectedNumber, string expectedText)
     {
-        // ← напиши сам:
-        // 1. превратить line в байты
-        // 2. вызвать LineParser.TryParse
-        // 3. проверить, что вернулось true
-        // 4. проверить число
-        // 5. проверить текст: bytes[result.TextStart..] → строка через Encoding.UTF8.GetString
         var bytes = Encoding.UTF8.GetBytes(line);
 
         var ok = LineParser.TryParse(bytes, out var result);
@@ -43,7 +36,7 @@ public class LineParserTests
     [InlineData(" 1. Apple")]
     [InlineData("1 . Apple")]
     [InlineData("1.5. Apple")]
-    [InlineData("9223372036854775808. X")]    // ← сюда добавь остальные строки из таблицы «Неправильные строки»
+    [InlineData("9223372036854775808. X")]
     public void TryParse_InvalidLine_ReturnsFalse(string line)
     {
         var bytes = Encoding.UTF8.GetBytes(line);
