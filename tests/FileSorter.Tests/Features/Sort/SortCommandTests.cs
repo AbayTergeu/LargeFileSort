@@ -53,7 +53,7 @@ public sealed class SortCommandTests : IDisposable
 
         Assert.Equal(string.Join('\n', ReferenceSorter.Sort(lines)) + "\n", output);
     }
-    
+
     [Fact]
     public void Run_EmptyInput_CreatesEmptyOutput()
     {
