@@ -7,7 +7,7 @@
 internal sealed class TempDirectory : IDisposable
 {
     private int _fileCount;
-    private string Path { get; }
+    
     public string NewFilePath() => System.IO.Path.Combine(Path, $"run-{++_fileCount:D6}.tmp");
 
     public TempDirectory(string parent)
@@ -15,6 +15,8 @@ internal sealed class TempDirectory : IDisposable
         Path = System.IO.Path.Combine(parent, $".sort-{Guid.NewGuid():N}");
         Directory.CreateDirectory(Path);
     }
+    
+    private string Path { get; }
     
     public void Dispose()
     {
