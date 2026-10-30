@@ -40,6 +40,20 @@ public sealed class SortCommandTests : IDisposable
         Assert.Equal("1. Apple\n", Sort("1. Apple", chunkSize: 1024 * 1024));
     }
 
+    [Theory]
+    [InlineData("1007. A\n1006. A\n1005. A\n1004. A\n1003. A\n1002. A\n1001. A\n1000. A")]
+    [InlineData("1007. A\n1006. A\n1005. A\n1004. A\n1003. A\n1002. A\n1001. A\n1000. A\n")]
+    [InlineData("1007. AB\n1006. A\n1005. A\n1004. A\n1003. A\n1002. A\n1001. A\n1000. A\n")]
+    public void Run_InputOneByteSmallerEqualOrLargerThanChunk(string content)
+    {
+        // 63, 64 and 65 bytes with a 64-byte chunk: the buffer is capped at the input size plus one byte.
+        var lines = content.TrimEnd('\n').Split('\n');
+
+        var output = Sort(content, chunkSize: 64);
+
+        Assert.Equal(string.Join('\n', ReferenceSorter.Sort(lines)) + "\n", output);
+    }
+    
     [Fact]
     public void Run_EmptyInput_CreatesEmptyOutput()
     {
