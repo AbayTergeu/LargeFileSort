@@ -13,9 +13,10 @@ internal sealed record SortOptions(
 {
     public const int DefaultChunkMegabytes = 64;
     public const int DefaultMergeFanIn = 64;
+    public const int DefaultMaxWorkers = 4;
+
     private const int MaxChunkMegabytes = 2047;
     private const int MaxWorkers = 64;
-    public const int DefaultMaxWorkers = 4;
 
     public static string Usage =>
         """
