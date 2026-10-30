@@ -1,4 +1,5 @@
 # LargeFileSort
+[![CI](https://github.com/AbayTergeu/LargeFileSort/actions/workflows/ci.yml/badge.svg)](https://github.com/AbayTergeu/LargeFileSort/actions/workflows/ci.yml)
 
 Test task: generate a large text file and sort its lines.
 
@@ -66,7 +67,28 @@ External merge sort in two phases:
 - A UTF-8 BOM at the start of the input is skipped. The output has no BOM.
 - Disk space: about 2× the input size besides the input itself (runs + output).
 - Up to `--workers` chunks (CPU cores, at most 4 by default) are sorted in parallel while the next chunk is read.
-  Memory is about (workers + 1) × 3 × chunk size.
+- Memory is about (workers + 1) × 3 × chunk size.
+- Ctrl+C stops the sort and deletes temporary files and the partial output.
+
+## Verify
+
+```
+dotnet run --project src/FileSorter -c Release -- verify <file>
+```
+
+Checks that every line is valid and the file is sorted by the rules above.
+Prints the number of lines, or the first line that is out of order.
+
+## Tests
+
+```
+dotnet test
+```
+
+- Unit tests for the line parser, the comparer and the size parser.
+- The external sort is compared with an in-memory sort on random input, with tiny chunks
+  (hundreds of runs, several merge passes) and different numbers of workers.
+- Edge cases: empty input, BOM, `\r\n`, no line break at the end, invalid and too long lines, cancellation.
 
 ## Performance
 
