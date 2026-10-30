@@ -66,7 +66,8 @@ External merge sort in two phases:
 2. **Merge.** Up to `--fan-in` runs (64 by default) are merged at once with a priority queue.
    If there are more runs, they are merged in groups first, and the results are merged again.
 
-- Temporary files are created in a folder next to the output (or in `--temp-dir`) and are deleted at the end, also on errors.
+- Temporary files are created in a folder next to the output (or in `--temp-dir`) and are deleted at the end,
+  also when the sort fails or is cancelled with Ctrl+C (but not when the process is killed, see Limits).
 - The result is written to `<output>.partial` and renamed at the end, so a failed sort never leaves a broken output file.
 - A UTF-8 BOM at the start of the input is skipped. The output has no BOM.
 - Disk space: about 2× the input size besides the input itself (runs + output).
@@ -111,3 +112,16 @@ from the second hardware thread of a core. Reading the input and the merge phase
 More workers only use more memory, so the default is the number of CPU cores, at most 4.
 
 For comparison, the first single-threaded version with 256 MB chunks took 65 s and 967 MB.
+
+### Large files
+
+Same machine and default options (4 workers, 64 MB chunks, fan-in 64).
+
+| Input | Lines         | Runs | Merge passes | Sort time | Peak memory | Verify  |
+|-------|---------------|------|--------------|-----------|-------------|---------|
+| 20 GB | 1,004,345,422 | 321  | 2            | 14 m 36 s | 1137 MB     | sorted, 46 s |
+
+- Memory does not grow with the input size: 20 times more data, about the same memory.
+- 20 GB takes longer than 20 × the 1 GB time: 321 runs need a second merge pass, so every byte is read
+  and written three times, and the 1 GB file fits in the OS file cache while 20 GB does not.
+- The line count from `sort` and `verify` is the same, so no line was lost.
