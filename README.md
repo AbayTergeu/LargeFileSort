@@ -34,3 +34,16 @@ A single line cannot be longer than the chunk size.
 - An existing output file is overwritten.
 
 The sort order, the encoding and the handling of invalid lines were confirmed with the 3dEYE team.
+
+## Test file generator
+
+```
+dotnet run --project src/FileGenerator -c Release -- <output-path> <size> [seed]
+```
+
+- `size` is in bytes or with a KB / MB / GB suffix, for example `10GB`. Minimum 1KB.
+- The file is never larger than `size` and is smaller by less than one line.
+- Text parts come from a fixed set of 1000 phrases, so many lines share the same text.
+- The same `seed` always produces the same file.
+
+Generating a 1 GB file takes about 6 seconds (including `dotnet run` startup).
