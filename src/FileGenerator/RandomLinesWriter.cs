@@ -20,7 +20,7 @@ internal sealed class RandomLinesWriter
     /// Writes lines until the next line would exceed <paramref name="targetSize"/>.
     /// The result is never larger than the target and is smaller by less than one line.
     /// </summary>
-    public void Generate(Stream output, long targetSize)
+    public void Write(Stream output, long targetSize)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(targetSize);
 

@@ -2,7 +2,7 @@
 
 namespace FileGenerator.Tests;
 
-public class FileGeneratorTests
+public class RandomLinesWriterTests
 {
     // "1000000. " + four longest words with spaces + "\n" is well below this.
     private const int MaxLineLength = 64;
@@ -11,9 +11,9 @@ public class FileGeneratorTests
     [InlineData(100L)]
     [InlineData(10_000L)]
     [InlineData(1_000_000L)]
-    public void Generate_SizeIsWithinOneLineOfTarget(long targetSize)
+    public void Write_SizeIsWithinOneLineOfTarget(long targetSize)
     {
-        var content = Generate(targetSize);
+        var content = Write(targetSize);
 
         var size = Encoding.UTF8.GetByteCount(content);
         Assert.True(size <= targetSize, $"Size {size} is larger than target {targetSize}.");
@@ -21,9 +21,9 @@ public class FileGeneratorTests
     }
 
     [Fact]
-    public void Generate_EveryLineHasNumberDotSpaceText()
+    public void Write_EveryLineHasNumberDotSpaceText()
     {
-        var content = Generate(100_000);
+        var content = Write(100_000);
 
         Assert.EndsWith("\n", content);
         foreach (var line in content.TrimEnd('\n').Split('\n'))
@@ -33,9 +33,9 @@ public class FileGeneratorTests
     }
 
     [Fact]
-    public void Generate_RepeatsTextParts()
+    public void Write_RepeatsTextParts()
     {
-        var lines = Generate(100_000).TrimEnd('\n').Split('\n');
+        var lines = Write(100_000).TrimEnd('\n').Split('\n');
 
         var texts = lines.Select(line => line[(line.IndexOf(". ", StringComparison.Ordinal) + 2)..]).ToList();
 
@@ -43,29 +43,29 @@ public class FileGeneratorTests
     }
 
     [Fact]
-    public void Generate_SameSeed_ProducesSameContent()
+    public void Write_SameSeed_ProducesSameContent()
     {
-        Assert.Equal(Generate(10_000, seed: 42), Generate(10_000, seed: 42));
+        Assert.Equal(Write(10_000, seed: 42), Write(10_000, seed: 42));
     }
 
     [Fact]
-    public void Generate_DifferentSeed_ProducesDifferentContent()
+    public void Write_DifferentSeed_ProducesDifferentContent()
     {
-        Assert.NotEqual(Generate(10_000, seed: 1), Generate(10_000, seed: 2));
+        Assert.NotEqual(Write(10_000, seed: 1), Write(10_000, seed: 2));
     }
 
     [Fact]
-    public void Generate_TargetSmallerThanOneLine_Throws()
+    public void Write_TargetSmallerThanOneLine_Throws()
     {
-        var generator = new RandomLinesWriter(seed: 1);
+        var writer = new RandomLinesWriter(seed: 1);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => generator.Generate(new MemoryStream(), targetSize: 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => writer.Write(new MemoryStream(), targetSize: 1));
     }
 
-    private static string Generate(long targetSize, int seed = 1)
+    private static string Write(long targetSize, int seed = 1)
     {
         using var output = new MemoryStream();
-        new RandomLinesWriter(seed).Generate(output, targetSize);
+        new RandomLinesWriter(seed).Write(output, targetSize);
         return Encoding.UTF8.GetString(output.ToArray());
     }
 }

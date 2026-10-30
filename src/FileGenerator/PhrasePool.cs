@@ -2,10 +2,10 @@
 
 namespace FileGenerator;
 
-/*
- * A fixed set of phrases. Lines pick their text from this set, so the same text
- * appears in many lines, as the assignment requires.
- */
+/// <summary>
+/// A fixed set of phrases. Lines pick their text from this set, so the same text
+/// appears in many lines, as the assignment requires.
+/// </summary>
 internal sealed class PhrasePool
 {
     private static readonly string[] Words =

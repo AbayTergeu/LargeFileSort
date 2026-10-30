@@ -23,7 +23,7 @@ if (args.Length == 3 && !int.TryParse(args[2], out seed))
 
 using (var output = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1 << 20))
 {
-    new RandomLinesWriter(seed).Generate(output, targetSize);
+    new RandomLinesWriter(seed).Write(output, targetSize);
 }
 
 Console.WriteLine($"Generated '{outputPath}': {new FileInfo(outputPath).Length:N0} bytes, seed {seed}.");
