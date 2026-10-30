@@ -47,3 +47,23 @@ dotnet run --project src/FileGenerator -c Release -- <output-path> <size> [seed]
 - The same `seed` always produces the same file.
 
 Generating a 1 GB file takes about 6 seconds (including `dotnet run` startup).
+
+### Invalid lines
+An empty line is also an invalid line.
+
+## Sorter
+
+```
+dotnet run --project src/FileSorter -c Release -- sort <input> [--output <path>] [--temp-dir <path>] [--chunk-mb <n>] [--fan-in <n>] [--skip-invalid]
+```
+
+External merge sort in two phases:
+1. **Split.** The input is read in chunks of `--chunk-mb` (256 MB by default). Each chunk ends at a line break.
+   Its lines are sorted in memory without copying them and written to a temporary run file.
+2. **Merge.** Up to `--fan-in` runs (64 by default) are merged at once with a priority queue.
+   If there are more runs, they are merged in groups first, and the results are merged again.
+
+- Temporary files are created in a folder next to the output (or in `--temp-dir`) and are deleted at the end, also on errors.
+- The result is written to `<output>.partial` and renamed at the end, so a failed sort never leaves a broken output file.
+- A UTF-8 BOM at the start of the input is skipped. The output has no BOM.
+- Disk space: about 2× the input size besides the input itself (runs + output).
