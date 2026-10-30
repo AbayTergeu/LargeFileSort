@@ -115,13 +115,22 @@ For comparison, the first single-threaded version with 256 MB chunks took 65 s a
 
 ### Large files
 
-Same machine and default options (4 workers, 64 MB chunks, fan-in 64).
+Same machine and default options (4 workers, 64 MB chunks, fan-in 64), on AC power.
 
-| Input | Lines         | Runs | Merge passes | Sort time | Peak memory | Verify  |
-|-------|---------------|------|--------------|-----------|-------------|---------|
-| 20 GB | 1,004,345,422 | 321  | 2            | 14 m 36 s | 1137 MB     | sorted, 46 s |
+| Input | Lines         | Runs | Merge passes | Sort time | Peak memory | Verify        |
+|-------|---------------|------|--------------|-----------|-------------|---------------|
+| 1 GB  | 50,212,678    | 17   | 1            | 22 s      | 870 MB      | sorted        |
+| 20 GB | 1,004,345,422 | 321  | 2            | 11 m 31 s | 875 MB      | sorted, 43 s  |
+| 50 GB | 2,510,866,361 | 801  | 2            | 31 m 20 s | 806 MB      | sorted, 103 s |
 
-- Memory does not grow with the input size: 20 times more data, about the same memory.
-- 20 GB takes longer than 20 × the 1 GB time: 321 runs need a second merge pass, so every byte is read
-  and written three times, and the 1 GB file fits in the OS file cache while 20 GB does not.
+- Memory does not grow with the input size: 50 times more data, the same memory.
+- From 20 GB to 50 GB the time grows almost linearly: both need two merge passes.
+  The jump from 1 GB is larger: 1 GB needs one merge pass and fits in the OS file cache, 20 GB and more do not.
+  With two merge passes every byte is read and written three times.
+- 100 GB was not run (it needs about 300 GB of free disk). It would have about 1600 runs, still two merge passes,
+  so the expected time on this machine is a little over an hour.
 - The line count from `sort` and `verify` is the same, so no line was lost.
+
+The first runs on 20 GB and 50 GB showed peak memory growing with the number of runs (1137 MB and 1669 MB).
+The cause was a new 1 MB write buffer for every run: buffers over 85 KB go to the large object heap,
+which the GC collects rarely. A 64 KB buffer fixed it without changing the speed.

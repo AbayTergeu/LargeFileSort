@@ -13,7 +13,7 @@ namespace FileSorter.Features.Sort.Split;
 internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirectory)
 {
     private static ReadOnlySpan<byte> Utf8Bom => [0xEF, 0xBB, 0xBF];
-    
+
     // A new buffer is created for every run. Below 85 KB it stays out of the large object heap,
     // which the GC collects rarely: with 1 MB buffers, peak memory grew with the number of runs.
     private const int RunWriteBufferSize = 64 * 1024;

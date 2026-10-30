@@ -33,7 +33,7 @@ public sealed class SortCommandTests : IDisposable
         var expected = string.Join('\n', ReferenceSorter.Sort(lines)) + "\n";
         Assert.True(expected == output, $"Output differs from the in-memory sort (seed {seed}).");
     }
-    
+
     [Fact]
     public void Run_SingleLineWithoutLineBreak_SmallerThanChunk()
     {
