@@ -116,13 +116,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
         var start = chunk.Start;
         while (start < chunk.End)
         {
-            var remaining = chunk.Workspace.Buffer.AsSpan(start, chunk.End - start);
-            var lineBreak = remaining.IndexOf((byte)'\n');
-            var line = lineBreak < 0 ? remaining : remaining[..lineBreak];
-            if (line.EndsWith((byte)'\r'))
-            {
-                line = line[..^1];
-            }
+            var consumed = LineSplitter.NextLine(chunk.Workspace.Buffer.AsSpan(start, chunk.End - start), out var line);
 
             if (LineParser.TryParse(line, out var parsed))
             {
@@ -138,7 +132,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
             }
 
             lineNumber++;
-            start += lineBreak < 0 ? remaining.Length : lineBreak + 1;
+            start += consumed;
         }
 
         Interlocked.Add(ref _lineCount, lines.Count);

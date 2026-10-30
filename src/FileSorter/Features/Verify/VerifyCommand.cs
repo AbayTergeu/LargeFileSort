@@ -30,13 +30,8 @@ internal static class VerifyCommand
             var remaining = buffer.AsSpan(0, length);
             while (!remaining.IsEmpty)
             {
-                var lineBreak = remaining.IndexOf((byte)'\n');
-                var line = lineBreak < 0 ? remaining : remaining[..lineBreak];
-                remaining = lineBreak < 0 ? [] : remaining[(lineBreak + 1)..];
-                if (line.EndsWith((byte)'\r'))
-                {
-                    line = line[..^1];
-                }
+                var consumed = LineSplitter.NextLine(remaining, out var line);
+                remaining = remaining[consumed..];
 
                 lineNumber++;
                 if (!LineParser.TryParse(line, out var parsed))
