@@ -21,6 +21,7 @@ Test task: generate a large text file and sort its lines.
 By default the sorter stops on the first invalid line and reports its line number.
 No output file is left behind. Use `--skip-invalid` to skip such lines;
 the number of skipped lines is printed at the end.
+An empty line is also an invalid line.
 
 ### Line endings
 Input may use `\n` or `\r\n` (even mixed). The output always uses `\n`, including after the last line.
@@ -47,9 +48,6 @@ dotnet run --project src/FileGenerator -c Release -- <output-path> <size> [seed]
 - The same `seed` always produces the same file.
 
 Generating a 1 GB file takes about 6 seconds (including `dotnet run` startup).
-
-### Invalid lines
-An empty line is also an invalid line.
 
 ## Sorter
 
