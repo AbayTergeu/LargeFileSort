@@ -13,6 +13,10 @@ namespace FileSorter.Features.Sort.Split;
 internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirectory)
 {
     private static ReadOnlySpan<byte> Utf8Bom => [0xEF, 0xBB, 0xBF];
+    
+    // A new buffer is created for every run. Below 85 KB it stays out of the large object heap,
+    // which the GC collects rarely: with 1 MB buffers, peak memory grew with the number of runs.
+    private const int RunWriteBufferSize = 64 * 1024;
 
     private long _lineCount;
     private long _skippedLineCount;
@@ -148,7 +152,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
     private string WriteRun(byte[] buffer, List<LineRef> lines)
     {
         var path = tempDirectory.NewFilePath();
-        using var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: 1 << 20);
+        using var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, bufferSize: RunWriteBufferSize);
         foreach (var line in lines)
         {
             output.Write(buffer, line.Offset, line.Length);
