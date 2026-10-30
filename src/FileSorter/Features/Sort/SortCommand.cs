@@ -21,7 +21,7 @@ internal static class SortCommand
         {
             // A small input does not need full-size chunk buffers.
             // The extra byte lets the reader reach the end of the input instead of seeing a full buffer.
-            var chunkSize = (int)Math.Min(options.ChunkSize, input.Length + 1);
+            var chunkSize = input.Length < options.ChunkSize ? (int)input.Length + 1 : options.ChunkSize;
             split = new SplitPhase(options with { ChunkSize = chunkSize }, tempDirectory);
             runs = split.Run(input, cancellationToken);
         }
