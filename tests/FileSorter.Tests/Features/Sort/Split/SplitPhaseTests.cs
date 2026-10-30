@@ -61,7 +61,7 @@ public sealed class SplitPhaseTests : IDisposable
 
         Assert.Equal(1, exception.LineNumber);
     }
-    
+
     [Fact]
     public void ChooseError_PrefersOtherErrorsOverInvalidLines()
     {

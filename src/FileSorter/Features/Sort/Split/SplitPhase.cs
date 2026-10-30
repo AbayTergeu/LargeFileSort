@@ -56,7 +56,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
 
         return [.. runs];
     }
-    
+
     /// <summary>
     /// Several chunks can fail at the same time. Any other error (for example, a full disk)
     /// matters more than a bad line, so it is reported first; otherwise the earliest bad line is.
