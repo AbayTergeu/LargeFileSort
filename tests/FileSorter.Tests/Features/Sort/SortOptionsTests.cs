@@ -15,7 +15,7 @@ public class SortOptionsTests
         Assert.Equal(Path.GetDirectoryName(options.OutputPath), options.TempParentPath);
         Assert.Equal(SortOptions.DefaultChunkMegabytes * 1024 * 1024, options.ChunkSize);
         Assert.Equal(SortOptions.DefaultMergeFanIn, options.MergeFanIn);
-        Assert.Equal(Environment.ProcessorCount, options.Workers);
+        Assert.Equal(Math.Min(Environment.ProcessorCount, SortOptions.DefaultMaxWorkers), options.Workers);
         Assert.False(options.SkipInvalid);
     }
 

@@ -52,11 +52,11 @@ Generating a 1 GB file takes about 6 seconds (including `dotnet run` startup).
 ## Sorter
 
 ```
-dotnet run --project src/FileSorter -c Release -- sort <input> [--output <path>] [--temp-dir <path>] [--chunk-mb <n>] [--fan-in <n>] [--skip-invalid]
+dotnet run --project src/FileSorter -c Release -- sort <input> [--output <path>] [--temp-dir <path>] [--chunk-mb <n>] [--fan-in <n>] [--workers <n>] [--skip-invalid]
 ```
 
 External merge sort in two phases:
-1. **Split.** The input is read in chunks of `--chunk-mb` (256 MB by default). Each chunk ends at a line break.
+1. **Split.** The input is read in chunks of `--chunk-mb` (64 MB by default). Each chunk ends at a line break.
    Its lines are sorted in memory without copying them and written to a temporary run file.
 2. **Merge.** Up to `--fan-in` runs (64 by default) are merged at once with a priority queue.
    If there are more runs, they are merged in groups first, and the results are merged again.
@@ -65,3 +65,23 @@ External merge sort in two phases:
 - The result is written to `<output>.partial` and renamed at the end, so a failed sort never leaves a broken output file.
 - A UTF-8 BOM at the start of the input is skipped. The output has no BOM.
 - Disk space: about 2× the input size besides the input itself (runs + output).
+- Up to `--workers` chunks (CPU cores, at most 4 by default) are sorted in parallel while the next chunk is read.
+  Memory is about (workers + 1) × 3 × chunk size.
+
+## Performance
+
+1 GB file (50 million lines) from the generator, default chunk size (64 MB).
+Machine: Intel Core i5-1135G7 (4 cores, 8 threads), 32 GB RAM, NVMe SSD, Windows.
+
+| Workers | Time   | Peak memory |
+|---------|--------|-------------|
+| 1       | 42.3 s | 284 MB      |
+| 2       | 25.8 s | 514 MB      |
+| 4       | 22.3 s | 870 MB      |
+| 8       | 22.7 s | 1798 MB     |
+
+Above 4 workers sorting gets no faster: the CPU has 4 physical cores, and sorting gains little
+from the second hardware thread of a core. Reading the input and the merge phase also run on one thread.
+More workers only use more memory, so the default is the number of CPU cores, at most 4.
+
+For comparison, the first single-threaded version with 256 MB chunks took 65 s and 967 MB.

@@ -15,6 +15,7 @@ internal sealed record SortOptions(
     public const int DefaultMergeFanIn = 64;
     private const int MaxChunkMegabytes = 2047;
     private const int MaxWorkers = 64;
+    public const int DefaultMaxWorkers = 4;
 
     public static string Usage =>
         """
@@ -23,7 +24,7 @@ internal sealed record SortOptions(
           --output <path>     Result file. Default: <input name>.sorted<extension> next to the input.
           --temp-dir <path>   Folder for temporary files. Default: the folder of the output file.
           --chunk-mb <n>      Size of one in-memory chunk, 1..2047. Default: 64.
-          --workers <n>       How many chunks are sorted in parallel. Default: the number of CPU cores.
+          --workers <n>       How many chunks are sorted in parallel. Default: CPU cores, at most 4.
           --fan-in <n>        How many runs are merged at once, 2 or more. Default: 64.
           --skip-invalid      Skip lines that are not "<number>. <text>" instead of stopping.
         """;
@@ -44,7 +45,8 @@ internal sealed record SortOptions(
         string? tempParentPath = null;
         var chunkMegabytes = DefaultChunkMegabytes;
         var fanIn = DefaultMergeFanIn;
-        var workers = Environment.ProcessorCount;
+        // More workers did not make sorting faster in measurements (see README), but each one adds a chunk of memory.
+        var workers = Math.Min(Environment.ProcessorCount, DefaultMaxWorkers);
         var skipInvalid = false;
 
         for (var i = 1; i < args.Length; i++)
