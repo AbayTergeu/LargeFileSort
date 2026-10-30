@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using FileSorter.Features.Sort;
-using FileSorter.Features.Sort.Split;
+using FileSorter.Lines;
 
-namespace FileSorter.Tests.Features.Sort.Split;
+namespace FileSorter.Tests.Lines;
 
 public class ChunkReaderTests
 {

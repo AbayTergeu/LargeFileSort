@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace FileSorter.Features.Sort;
+namespace FileSorter.Lines;
 
 internal sealed class InvalidLineException(long lineNumber, ReadOnlySpan<byte> line)
     : Exception($"Line {lineNumber:N0} has an invalid format: \"{Preview(line)}\". Expected \"<number>. <text>\".")

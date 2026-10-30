@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using FileSorter.Features.Sort;
 using FileSorter.Features.Sort.Split;
+using FileSorter.Lines;
 using FileSorter.Tests.TestSupport;
 
 namespace FileSorter.Tests.Features.Sort.Split;

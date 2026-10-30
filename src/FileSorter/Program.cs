@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using FileSorter.Features.Sort;
+using FileSorter.Lines;
 
 if (args.Length == 0 || args[0] != "sort")
 {

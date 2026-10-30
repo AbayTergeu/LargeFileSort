@@ -1,4 +1,4 @@
-﻿namespace FileSorter.Features.Sort;
+﻿namespace FileSorter.Lines;
 
 internal sealed class LineTooLongException(int chunkSize)
     : Exception($"A line is longer than the chunk size ({chunkSize:N0} bytes). Use a larger --chunk-mb.");
