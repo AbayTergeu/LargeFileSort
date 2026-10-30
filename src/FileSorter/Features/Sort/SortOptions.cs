@@ -17,6 +17,8 @@ internal sealed record SortOptions(
 
     private const int MaxChunkMegabytes = 2047;
     private const int MaxWorkers = 64;
+    // Each merged run is an open file; operating systems limit open files per process (often to 1024).
+    private const int MaxMergeFanIn = 512;
 
     public static string Usage =>
         """
@@ -26,7 +28,7 @@ internal sealed record SortOptions(
           --temp-dir <path>   Folder for temporary files. Default: the folder of the output file.
           --chunk-mb <n>      Size of one in-memory chunk, 1..2047. Default: 64.
           --workers <n>       How many chunks are sorted in parallel. Default: CPU cores, at most 4.
-          --fan-in <n>        How many runs are merged at once, 2 or more. Default: 64.
+          --fan-in <n>        How many runs are merged at once, 2..512. Default: 64.
           --skip-invalid      Skip lines that are not "<number>. <text>" instead of stopping.
         """;
 
@@ -76,7 +78,7 @@ internal sealed record SortOptions(
                     break;
                 case "--chunk-mb" when TryParseInt(value, 1, MaxChunkMegabytes, out chunkMegabytes):
                     break;
-                case "--fan-in" when TryParseInt(value, 2, int.MaxValue, out fanIn):
+                case "--fan-in" when TryParseInt(value, 2, MaxMergeFanIn, out fanIn):
                     break;
                 case "--workers" when TryParseInt(value, 1, MaxWorkers, out workers):
                     break;

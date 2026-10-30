@@ -53,6 +53,7 @@ public class SortOptionsTests
     [InlineData("in.txt", "--chunk-mb", "2048")]
     [InlineData("in.txt", "--chunk-mb", "abc")]
     [InlineData("in.txt", "--fan-in", "1")]
+    [InlineData("in.txt", "--fan-in", "513")]
     [InlineData("in.txt", "--workers", "0")]
     [InlineData("in.txt", "--workers", "65")]
     public void TryParse_InvalidArguments_Fails(params string[] args)

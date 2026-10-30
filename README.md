@@ -28,7 +28,11 @@ An empty line is also an invalid line.
 Input may use `\n` or `\r\n` (even mixed). The output always uses `\n`, including after the last line.
 
 ### Limits
-A single line cannot be longer than the chunk size.
+- A single line cannot be longer than the chunk size.
+- The input must be valid UTF-8. Invalid byte sequences are not reported; they are sorted by their bytes.
+- Temporary files and `<output>.partial` are deleted on errors and on Ctrl+C. If the process is killed
+  or the machine loses power, they stay in the temp folder (`.sort-*`) and must be deleted by hand.
+- Do not run two sorts with the same output file at the same time.
 
 ### Output file
 - By default the result is written next to the input as `<name>.sorted.txt`.

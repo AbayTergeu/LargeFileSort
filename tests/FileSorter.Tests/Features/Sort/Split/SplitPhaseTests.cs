@@ -61,6 +61,23 @@ public sealed class SplitPhaseTests : IDisposable
 
         Assert.Equal(1, exception.LineNumber);
     }
+    
+    [Fact]
+    public void ChooseError_PrefersOtherErrorsOverInvalidLines()
+    {
+        var diskFull = new IOException("Disk full");
+        Exception[] errors = [new InvalidLineException(5, "x"u8), diskFull, new InvalidLineException(2, "y"u8)];
+
+        Assert.Same(diskFull, SplitPhase.ChooseError(errors));
+    }
+
+    [Fact]
+    public void ChooseError_OnlyInvalidLines_ChoosesTheEarliest()
+    {
+        Exception[] errors = [new InvalidLineException(5, "x"u8), new InvalidLineException(2, "y"u8)];
+
+        Assert.Equal(2, ((InvalidLineException)SplitPhase.ChooseError(errors)).LineNumber);
+    }
 
     [Fact]
     public void Run_InvalidLineInLaterChunk_HasLineNumberInWholeInput()

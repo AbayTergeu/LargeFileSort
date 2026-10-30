@@ -51,13 +51,19 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
         }
         catch (AggregateException e)
         {
-            // Several chunks can fail at the same time; report the earliest invalid line.
-            var first = e.InnerExceptions.OfType<InvalidLineException>().MinBy(x => x.LineNumber) ?? e.InnerExceptions[0];
-            ExceptionDispatchInfo.Throw(first);
+            ExceptionDispatchInfo.Throw(ChooseError(e.InnerExceptions));
         }
 
         return [.. runs];
     }
+    
+    /// <summary>
+    /// Several chunks can fail at the same time. Any other error (for example, a full disk)
+    /// matters more than a bad line, so it is reported first; otherwise the earliest bad line is.
+    /// </summary>
+    internal static Exception ChooseError(IReadOnlyCollection<Exception> errors) =>
+        errors.FirstOrDefault(e => e is not InvalidLineException)
+        ?? errors.Cast<InvalidLineException>().MinBy(e => e.LineNumber)!;
 
     private static IEnumerable<Chunk> ReadChunks(Stream input, ChunkPool pool)
     {
