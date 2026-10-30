@@ -12,17 +12,17 @@ internal sealed class MergePhase(SortOptions options, TempDirectory tempDirector
     private const int ReadBufferSize = 64 * 1024;
     private const int WriteBufferSize = 1 << 20;
 
-    public void Run(List<string> runs, Stream output)
+    public void Run(List<string> runs, Stream output, CancellationToken cancellationToken)
     {
         while (runs.Count > options.MergeFanIn)
         {
-            runs = MergeGroups(runs);
+            runs = MergeGroups(runs, cancellationToken);
         }
 
-        Merge(runs, output);
+        Merge(runs, output, cancellationToken);
     }
 
-    private List<string> MergeGroups(List<string> runs)
+    private List<string> MergeGroups(List<string> runs, CancellationToken cancellationToken)
     {
         var merged = new List<string>();
         foreach (var group in runs.Chunk(options.MergeFanIn))
@@ -30,7 +30,7 @@ internal sealed class MergePhase(SortOptions options, TempDirectory tempDirector
             var path = tempDirectory.NewFilePath();
             using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, WriteBufferSize))
             {
-                Merge(group, output);
+                Merge(group, output, cancellationToken);
             }
 
             foreach (var run in group)
@@ -44,7 +44,7 @@ internal sealed class MergePhase(SortOptions options, TempDirectory tempDirector
         return merged;
     }
 
-    private static void Merge(IReadOnlyList<string> runs, Stream output)
+    private static void Merge(IReadOnlyList<string> runs, Stream output, CancellationToken cancellationToken)
     {
         var readers = new List<RunReader>(runs.Count);
         try
@@ -63,6 +63,7 @@ internal sealed class MergePhase(SortOptions options, TempDirectory tempDirector
 
             while (queue.TryDequeue(out var reader, out _))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 output.Write(reader.Current);
                 output.WriteByte((byte)'\n');
 

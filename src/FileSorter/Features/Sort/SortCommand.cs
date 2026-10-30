@@ -11,7 +11,7 @@ internal static class SortCommand
     /// Sorts the input file into the output file. The result is first written to a partial file
     /// next to the output and renamed only at the end, so a failed sort never leaves a broken output.
     /// </summary>
-    public static SortResult Run(SortOptions options)
+    public static SortResult Run(SortOptions options, CancellationToken cancellationToken)
     {
         using var tempDirectory = new TempDirectory(options.TempParentPath);
 
@@ -19,7 +19,7 @@ internal static class SortCommand
         List<string> runs;
         using (var input = new FileStream(options.InputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 0, FileOptions.SequentialScan))
         {
-            runs = split.Run(input);
+            runs = split.Run(input, cancellationToken);
         }
 
         var runCount = runs.Count;
@@ -28,7 +28,7 @@ internal static class SortCommand
         {
             using (var output = new FileStream(partialOutput, FileMode.Create, FileAccess.Write, FileShare.None, WriteBufferSize))
             {
-                new MergePhase(options, tempDirectory).Run(runs, output);
+                new MergePhase(options, tempDirectory).Run(runs, output, cancellationToken);
             }
 
             File.Move(partialOutput, options.OutputPath, overwrite: true);

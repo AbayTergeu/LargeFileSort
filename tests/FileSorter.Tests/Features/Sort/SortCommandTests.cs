@@ -48,7 +48,7 @@ public sealed class SortCommandTests : IDisposable
     {
         var options = WriteInput(content, chunkSize: 6);
 
-        var exception = Assert.Throws<InvalidLineException>(() => SortCommand.Run(options));
+        var exception = Assert.Throws<InvalidLineException>(() => SortCommand.Run(options, CancellationToken.None));
 
         Assert.Equal(expectedLineNumber, exception.LineNumber);
         Assert.Equal(["input.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName));
@@ -59,7 +59,7 @@ public sealed class SortCommandTests : IDisposable
     {
         var options = WriteInput("1. A\n2. This line is too long\n", chunkSize: 16);
 
-        Assert.Throws<LineTooLongException>(() => SortCommand.Run(options));
+        Assert.Throws<LineTooLongException>(() => SortCommand.Run(options, CancellationToken.None));
 
         Assert.Equal(["input.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName));
     }
@@ -69,7 +69,7 @@ public sealed class SortCommandTests : IDisposable
     {
         var options = WriteInput("2. B\nApple\n\n1. A\n-5. C\n") with { SkipInvalid = true };
 
-        var result = SortCommand.Run(options);
+        var result = SortCommand.Run(options, CancellationToken.None);
 
         Assert.Equal("1. A\n2. B\n", File.ReadAllText(options.OutputPath));
         Assert.Equal(2, result.LineCount);
@@ -82,7 +82,7 @@ public sealed class SortCommandTests : IDisposable
         var options = WriteInput("2. B\n1. A\n");
         File.WriteAllText(options.OutputPath, "old content that is longer than the new one\n");
 
-        SortCommand.Run(options);
+        SortCommand.Run(options, CancellationToken.None);
 
         Assert.Equal("1. A\n2. B\n", File.ReadAllText(options.OutputPath));
     }
@@ -92,11 +92,21 @@ public sealed class SortCommandTests : IDisposable
     {
         var options = WriteInput(string.Join('\n', RandomLines.Create(seed: 5, count: 500)), chunkSize: 100, fanIn: 2);
 
-        SortCommand.Run(options);
+        SortCommand.Run(options, CancellationToken.None);
 
         Assert.Equal(["input.txt", "output.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName).Order());
     }
 
+    [Fact]
+    public void Run_Cancelled_ThrowsAndLeavesNoFiles()
+    {
+        var options = WriteInput(string.Join('\n', RandomLines.Create(seed: 7, count: 500)), chunkSize: 100);
+
+        Assert.Throws<OperationCanceledException>(() => SortCommand.Run(options, new CancellationToken(canceled: true)));
+
+        Assert.Equal(["input.txt"], Directory.GetFileSystemEntries(_folder.Path).Select(Path.GetFileName));
+    }
+    
     [Fact]
     public void Run_SameOutputForAnyNumberOfWorkers()
     {
@@ -110,7 +120,7 @@ public sealed class SortCommandTests : IDisposable
     private string Sort(string content, int chunkSize = 1024, int fanIn = 64, int workers = 1)
     {
         var options = WriteInput(content, chunkSize, fanIn, workers);
-        SortCommand.Run(options);
+        SortCommand.Run(options, CancellationToken.None);
         return File.ReadAllText(options.OutputPath, Encoding.UTF8);
     }
 

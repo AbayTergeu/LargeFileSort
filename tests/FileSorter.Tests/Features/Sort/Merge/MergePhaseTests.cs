@@ -73,13 +73,23 @@ public sealed class MergePhaseTests : IDisposable
         Assert.All(runs, run => Assert.False(File.Exists(run)));
     }
 
+    [Fact]
+    public void Run_Cancelled_Throws()
+    {
+        var runs = WriteRuns(["1. A\n", "2. B\n"]);
+        var options = new SortOptions("input.txt", "output.txt", _folder.Path, ChunkSize: 1024, MergeFanIn: 64, Workers: 1, SkipInvalid: false);
+
+        Assert.Throws<OperationCanceledException>(
+            () => new MergePhase(options, _tempDirectory).Run(runs, new MemoryStream(), new CancellationToken(canceled: true)));
+    }
+    
     private string Merge(int fanIn, params string[] runContents) => Merge(fanIn, WriteRuns(runContents));
 
     private string Merge(int fanIn, List<string> runs)
     {
         var options = new SortOptions("input.txt", "output.txt", _folder.Path, ChunkSize: 1024, fanIn, Workers: 1, SkipInvalid: false);
         using var output = new MemoryStream();
-        new MergePhase(options, _tempDirectory).Run(runs, output);
+        new MergePhase(options, _tempDirectory).Run(runs, output, CancellationToken.None);
         return Encoding.UTF8.GetString(output.ToArray());
     }
 

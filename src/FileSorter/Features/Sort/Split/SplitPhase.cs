@@ -21,7 +21,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
 
     public long SkippedLineCount => _skippedLineCount;
 
-    public List<string> Run(Stream input)
+    public List<string> Run(Stream input, CancellationToken cancellationToken)
     {
         // The reader fills one workspace while every worker sorts another.
         using var pool = new ChunkPool(options.Workers + 1, options.ChunkSize);
@@ -33,7 +33,7 @@ internal sealed class SplitPhase(SortOptions options, TempDirectory tempDirector
         {
             Parallel.ForEach(
                 chunks,
-                new ParallelOptions { MaxDegreeOfParallelism = options.Workers },
+                new ParallelOptions { MaxDegreeOfParallelism = options.Workers, CancellationToken = cancellationToken },
                 chunk =>
                 {
                     try

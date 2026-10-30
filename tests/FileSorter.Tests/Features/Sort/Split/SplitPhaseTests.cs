@@ -57,7 +57,7 @@ public sealed class SplitPhaseTests : IDisposable
         var content = string.Concat(Enumerable.Repeat("invalid\n", 5000));
         var phase = CreatePhase(chunkSize: 16, skipInvalid: false, workers: 8);
 
-        var exception = Assert.Throws<InvalidLineException>(() => phase.Run(Input(content)));
+        var exception = Assert.Throws<InvalidLineException>(() => phase.Run(Input(content), CancellationToken.None));
 
         Assert.Equal(1, exception.LineNumber);
     }
@@ -69,7 +69,7 @@ public sealed class SplitPhaseTests : IDisposable
         lines[1499] = "invalid";
         var phase = CreatePhase(chunkSize: 64, skipInvalid: false, workers: 4);
 
-        var exception = Assert.Throws<InvalidLineException>(() => phase.Run(Input(string.Join('\n', lines))));
+        var exception = Assert.Throws<InvalidLineException>(() => phase.Run(Input(string.Join('\n', lines)), CancellationToken.None));
 
         Assert.Equal(1500, exception.LineNumber);
     }
@@ -79,7 +79,7 @@ public sealed class SplitPhaseTests : IDisposable
     {
         var phase = CreatePhase(chunkSize: 8, skipInvalid: true, workers: 4);
 
-        var runs = phase.Run(Input("2. B\nApple\n\n1. A\n"));
+        var runs = phase.Run(Input("2. B\nApple\n\n1. A\n"), CancellationToken.None);
 
         Assert.Equal(["1. A\n", "2. B\n"], runs.Select(File.ReadAllText).Order());
         Assert.Equal(2, phase.LineCount);
@@ -87,7 +87,7 @@ public sealed class SplitPhaseTests : IDisposable
     }
 
     private List<string> Split(string content, int chunkSize = 1024) =>
-        CreatePhase(chunkSize, skipInvalid: false).Run(Input(content)).Select(File.ReadAllText).ToList();
+        CreatePhase(chunkSize, skipInvalid: false).Run(Input(content), CancellationToken.None).Select(File.ReadAllText).ToList();
 
     private SplitPhase CreatePhase(int chunkSize, bool skipInvalid, int workers = 1)
     {
