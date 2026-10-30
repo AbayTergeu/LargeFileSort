@@ -33,6 +33,12 @@ public sealed class SortCommandTests : IDisposable
         var expected = string.Join('\n', ReferenceSorter.Sort(lines)) + "\n";
         Assert.True(expected == output, $"Output differs from the in-memory sort (seed {seed}).");
     }
+    
+    [Fact]
+    public void Run_SingleLineWithoutLineBreak_SmallerThanChunk()
+    {
+        Assert.Equal("1. Apple\n", Sort("1. Apple", chunkSize: 1024 * 1024));
+    }
 
     [Fact]
     public void Run_EmptyInput_CreatesEmptyOutput()

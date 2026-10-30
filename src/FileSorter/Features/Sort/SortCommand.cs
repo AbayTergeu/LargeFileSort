@@ -15,10 +15,14 @@ internal static class SortCommand
     {
         using var tempDirectory = new TempDirectory(options.TempParentPath);
 
-        var split = new SplitPhase(options, tempDirectory);
+        SplitPhase split;
         List<string> runs;
         using (var input = new FileStream(options.InputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 0, FileOptions.SequentialScan))
         {
+            // A small input does not need full-size chunk buffers.
+            // The extra byte lets the reader reach the end of the input instead of seeing a full buffer.
+            var chunkSize = (int)Math.Min(options.ChunkSize, input.Length + 1);
+            split = new SplitPhase(options with { ChunkSize = chunkSize }, tempDirectory);
             runs = split.Run(input, cancellationToken);
         }
 
